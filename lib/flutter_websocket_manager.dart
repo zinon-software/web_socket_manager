@@ -2,7 +2,6 @@ library flutter_websocket_manager;
 
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/html.dart';
 import 'package:web_socket_channel/io.dart';
 
 /// A class that manages WebSocket connections, allowing for easy connection,
@@ -30,6 +29,9 @@ class FlutterWebSocketManager {
   // Callback function to handle errors during WebSocket communication
   Function(dynamic)? _errorCallback;
 
+  Function(String)? _connectCallback;
+  Function(String)? _doneCallback;
+
   /// Constructor to initialize the FlutterWebSocketManager with a WebSocket [url],
   /// optional [headers] and optional [queryParameters].
   FlutterWebSocketManager(this.url, {this.headers, this.queryParameters}) {
@@ -38,27 +40,25 @@ class FlutterWebSocketManager {
   }
 
   /// Connects to the WebSocket server and listens for incoming messages.
-  void connect() {
+  void connect() async {
     try {
       // Parse the URL and add any query parameters
       final wsUrl = Uri.parse(url).replace(
         queryParameters: queryParameters,
       );
 
-      // Determine the WebSocket connection type based on the platform
-      if (isWeb) {
-        // Use HtmlWebSocketChannel for web
-        _channel = HtmlWebSocketChannel.connect(wsUrl.toString());
-      } else {
-        // Use IOWebSocketChannel for other platforms with headers
-        _channel = IOWebSocketChannel.connect(
-          wsUrl,
-          headers: headers,
-        );
-      }
+      // Use IOWebSocketChannel for other platforms with headers
+      _channel = IOWebSocketChannel.connect(
+        wsUrl,
+        headers: headers,
+      );
 
       // Set the state to connected
       _state = SocketConnectionState.connected;
+
+      await _channel.ready;
+
+      _connectCallback!("Connected");
 
       // Listen to incoming messages from the WebSocket stream
       _channel.stream.listen(
@@ -70,18 +70,18 @@ class FlutterWebSocketManager {
             _messageCallback!(message);
           }
         },
+        onDone: () {
+          // When the connection is closed, trigger the done/error callback
+          disconnect();
+          if (_errorCallback != null) {
+            _doneCallback!("onDone");
+          }
+        },
         onError: (error) {
           // Disconnect on error and trigger the error callback if provided
           disconnect();
           if (_errorCallback != null) {
             _errorCallback!(error);
-          }
-        },
-        onDone: () {
-          // When the connection is closed, trigger the done/error callback
-          disconnect();
-          if (_errorCallback != null) {
-            _errorCallback!("onDone");
           }
         },
       );
@@ -112,9 +112,17 @@ class FlutterWebSocketManager {
     }
   }
 
+  void onConnect(Function(String) callback) {
+    _connectCallback = callback;
+  }
+
   /// Sets the callback function for handling incoming messages.
   void onMessage(Function(dynamic) callback) {
     _messageCallback = callback;
+  }
+
+  void onDone(Function(String) callback) {
+    _doneCallback = callback;
   }
 
   /// Sets the callback function for handling errors and disconnections.

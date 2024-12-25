@@ -116,9 +116,17 @@ void main() {
   // Connect to the WebSocket
   wsManager.connect();
 
+  wsManager.onConnect((msg) {
+    print(msg);
+  });
+
   // Listen for messages
   wsManager.onMessage((message) {
     print("Received message: $message");
+  });
+
+  wsManager.onDone((msg) {
+    print(msg);
   });
 
   // Handle errors
