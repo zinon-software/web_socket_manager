@@ -2,10 +2,10 @@ name: flutter_websocket_manager
 description: >
   Simplifies WebSocket management in Flutter, handling messages, errors, and connection states seamlessly.
 
-version: 1.0.4
+version: 1.0.5
 
-homepage: https://github.com/zinon-software/flutter_websocket_manager
-repository: https://github.com/zinon-software/flutter_websocket_manager
+homepage: https://github.com/ardev-dev/flutter_websocket_manager
+repository: https://github.com/ardev-dev/flutter_websocket_manager
 
 environment:
   sdk: ^3.5.4

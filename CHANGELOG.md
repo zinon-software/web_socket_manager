@@ -1,3 +1,11 @@
+## 1.0.5
+
+- Point `homepage`, `repository`, and `issue_tracker` at the current GitHub
+  account (`ardev-dev`). The previous metadata referenced an old account name
+  and only resolved through a GitHub redirect.
+
+No code changes.
+
 ## 0.0.1
 
 * TODO: Describe initial release.
